@@ -66,4 +66,4 @@ This project enhances the Microwatt POWER CPU by integrating a memory-mapped tim
 
 ## Authors & Credits
 
-- (Your Name, contributors, template references, etc.)
+- Tatiparthi Madhava Reddy
