@@ -1,69 +1,35 @@
-# Project: Interrupt-Capable, Auto-Reload Timer Peripheral for Microwatt CPU (ChipFoundry Design Challenge)
+# Proposal: Timer Peripheral with Interrupt and Auto-Reload for Microwatt CPU
 
-## Overview
+## Project Summary
 
-This project enhances the Microwatt POWER CPU by integrating a memory-mapped timer peripheral supporting both periodic (auto-reload) mode and interrupt generation. The timer is accessible from software to enable time-keeping, event scheduling, and system tick functionalities. It demonstrates typical SoC extension for embedded applications.
+This project aims to integrate a memory-mapped timer peripheral with the Microwatt POWER CPU, implemented using the ChipFoundry OpenFrame template. The timer will support auto-reload (periodic) mode as well as interrupt generation. This is a typical SoC enhancement, useful for timing, delays, task scheduling, and system tick generation in embedded applications.
 
-## Key Features
+## Motivation
 
-- 32-bit memory-mapped timer register
-- Auto-reload (periodic) operation mode
-- Optional one-shot mode
-- Configurable timer start/stop and reload value via control register
-- Hardware interrupt signal asserted to CPU when timer expires
-- Status register for timer running, interrupt pending, and overflow
-- Fully documented register map
-- Includes testbench (Verilog), simulation demo, and example C usage
-- Clean diagrams and reproducible setup for ChipFoundry/OpenFrame flow
+Timers are essential for most digital systems, especially where precise timekeeping or regular interval events are required. Adding a simple, efficient timer block that can trigger an interrupt and operate in both one-shot and periodic modes greatly extends the utility of the Microwatt core for real-world use cases. This serves as a foundational block for operating systems, bare-metal firmware, or any applications that need alarms or routine scheduling.
 
-## Register Map
+## Core Features
 
-| Offset | Register     | Description                       |
-|--------|--------------|------------------------------------|  
-| 0x00   | TIMER_COUNT  | Current timer value (RW)           |
-| 0x04   | TIMER_CTRL   | Control (start/stop, mode, clear)  |
-| 0x08   | TIMER_RELOAD | Reload value (RW)                  |
-| 0x0C   | TIMER_STAT   | Status (interrupt, overflow)       |
+- 32-bit timer, memory-mapped for register access
+- Configurable reload value for periodic operation
+- Support for both one-shot and auto-reload (periodic) modes
+- Generates interrupt request to the CPU on timer expiry
+- Basic status and control registers (start/stop, mode select, interrupt flag)
 
-## Example Use Cases
-
-- Software-driven delays and periodic events
-- RTOS or bare-metal OS system tick timer
-- Simple alarm/event triggering via interrupt
-
-## Block Diagram
+## High-Level Block Diagram
 
 ![Timer Peripheral Block Diagram](docs/timer_block_diagram.png)
 
-*Figure: Timer peripheral architecture showing connection to Microwatt CPU bus and interrupt line. The diagram illustrates the 32-bit timer/counter, control registers, auto-reload functionality, and interrupt generation logic.*
+*The timer peripheral connects to the Microwatt CPU via the system bus for register access and emits an interrupt signal on expiry. The reload and control logic enables periodic or one-shot operation.*
 
-## Simulation & Demo
+## Implementation Outline
 
-- Provided Verilog testbench covers normal, auto-reload, and interrupt cases
-- Example bus transactions: set reload, start timer, wait for interrupt, read value
-- C code provided for bare-metal demo
-- Simulation waveforms and screenshot(s) included
+- Adapt the OpenFrame user project template to instantiate and connect the timer block
+- Define register map (counter, control, reload, status)
+- Integrate interrupt output to CPU interrupt line
+- Develop simple testbench for timer operation (including auto-reload and interrupt cases)
+- Document register interface and provide example usage scenario
 
-## Setup & Repo Instructions
+## Expected Outcome
 
-1. Clone the repo (template already includes OpenFrame setup)
-2. Edit/insert timer Verilog in /verilog and update wrapper as needed
-3. Run simulation with testbench in /verilog/testbench
-4. Synthesize and implement using OpenLane:
-   - make setup
-   - make user_proj_timer
-   - make openframe_project_wrapper
-5. Follow README instructions for expected output, demo scripts, and verification
-
-## Documentation & Licensing
-
-- Full documentation in /docs
-- Open-source (Apache-2.0)
-
-## AI Usage
-
-(If AI/LLM/generative tools are used for any code or doc generation, logs are provided per challenge guidelines.)
-
-## Authors & Credits
-
-- Tatiparthi Madhava Reddy
+A lightweight Verilog design that demonstrates a functional, extensible timer peripheral for the Microwatt CPU, suitable for inclusion in future SoC developments or course projects.
