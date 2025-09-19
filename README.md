@@ -1,35 +1,45 @@
-# Proposal: Timer Peripheral with Interrupt and Auto-Reload for Microwatt CPU
+# Proposal: Performance Counter Peripheral for Microwatt CPU Profiling
 
-## Project Summary
+### Project Summary
 
-This project aims to integrate a memory-mapped timer peripheral with the Microwatt POWER CPU, implemented using the ChipFoundry OpenFrame template. The timer will support auto-reload (periodic) mode as well as interrupt generation. This is a typical SoC enhancement, useful for timing, delays, task scheduling, and system tick generation in embedded applications.
+This project proposes the design and integration of a simple, memory-mapped performance counter peripheral for the Microwatt POWER CPU. The peripheral will provide a pair of 64-bit counters: a free-running **cycle counter** and an **instruction-retired counter**. This will enable developers to perform precise, low-overhead performance profiling of their software, helping to identify bottlenecks and optimize critical code paths within the Microwatt ecosystem.
 
-## Motivation
+---
 
-Timers are essential for most digital systems, especially where precise timekeeping or regular interval events are required. Adding a simple, efficient timer block that can trigger an interrupt and operate in both one-shot and periodic modes greatly extends the utility of the Microwatt core for real-world use cases. This serves as a foundational block for operating systems, bare-metal firmware, or any applications that need alarms or routine scheduling.
+### Motivation
 
-## Core Features
+For any serious software development, the ability to answer "How fast is my code?" is crucial. Professional CPU architectures include hardware performance counters as a standard feature. By adding this capability to Microwatt, we significantly mature the platform, turning it from just a CPU core into a more analyzable and professional development target. This tool empowers developers to make data-driven decisions, calculate key metrics like Cycles Per Instruction (CPI), and quantitatively measure the impact of their optimizations.
 
-- 32-bit timer, memory-mapped for register access
-- Configurable reload value for periodic operation
-- Support for both one-shot and auto-reload (periodic) modes
-- Generates interrupt request to the CPU on timer expiry
-- Basic status and control registers (start/stop, mode select, interrupt flag)
+---
 
-## High-Level Block Diagram
+### Core Features
 
-![Timer Peripheral Block Diagram](docs/timer_block_diagram.png)
+* **Memory-mapped** register interface for easy software access.
+* A **64-bit free-running cycle counter** that increments every clock cycle.
+* A **64-bit instruction-retired counter** that increments only when the CPU successfully completes an instruction.
+* A simple control register to enable, disable, and reset the counters.
 
-*The timer peripheral connects to the Microwatt CPU via the system bus for register access and emits an interrupt signal on expiry. The reload and control logic enables periodic or one-shot operation.*
+---
 
-## Implementation Outline
+### High-Level Block Diagram
 
-- Adapt the OpenFrame user project template to instantiate and connect the timer block
-- Define register map (counter, control, reload, status)
-- Integrate interrupt output to CPU interrupt line
-- Develop simple testbench for timer operation (including auto-reload and interrupt cases)
-- Document register interface and provide example usage scenario
 
-## Expected Outcome
 
-A lightweight Verilog design that demonstrates a functional, extensible timer peripheral for the Microwatt CPU, suitable for inclusion in future SoC developments or course projects.
+The peripheral connects to the Microwatt system bus for register access. It also requires a single signal tap from the CPU core's pipeline (e.g., an `instruction_retired` pulse) to accurately count completed instructions.
+
+---
+
+### Implementation Outline
+
+1.  Design the dual-counter peripheral in Verilog. The logic is minimal and primarily consists of two 64-bit registers with enable logic.
+2.  Integrate the module into the OpenFrame user project, connecting its registers to the memory map.
+3.  Identify and connect the appropriate signal from the Microwatt core to the instruction-retired counter's increment logic.
+4.  Develop a testbench to verify that the counters increment correctly under various conditions (e.g., during CPU stalls, the cycle counter should increment while the instruction counter does not).
+5.  Write a sample C program demonstrating how to use the peripheral to benchmark a function and calculate its average CPI.
+6.  Document the register map and provide clear instructions for other developers on how to use the tool for their own projects.
+
+---
+
+### Expected Outcome
+
+The result will be a lightweight, powerful, and easy-to-use profiling tool for the Microwatt CPU. This project delivers not just a piece of hardware, but a foundational capability that enhances the value and usability of the Microwatt core for the entire open-source community.
