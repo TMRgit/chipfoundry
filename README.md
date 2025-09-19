@@ -1,23 +1,24 @@
-# Proposal: Performance Counter Peripheral for Microwatt CPU Profiling
+# Proposal: CRC32 Accelerator Peripheral for Microwatt CPU
 
 ### Project Summary
 
-This project proposes the design and integration of a simple, memory-mapped performance counter peripheral for the Microwatt POWER CPU. The peripheral will provide a pair of 64-bit counters: a free-running **cycle counter** and an **instruction-retired counter**. This will enable developers to perform precise, low-overhead performance profiling of their software, helping to identify bottlenecks and optimize critical code paths within the Microwatt ecosystem.
+This project proposes the design and integration of a memory-mapped **CRC32 hardware accelerator** for the Microwatt POWER CPU. Implemented within the ChipFoundry OpenFrame template, this peripheral will offload the computationally intensive task of Cyclic Redundancy Check (CRC) calculation from the main processor. The primary goal is to demonstrate a significant, quantifiable performance increase over a purely software-based implementation for data integrity checks.
 
 ---
 
 ### Motivation
 
-For any serious software development, the ability to answer "How fast is my code?" is crucial. Professional CPU architectures include hardware performance counters as a standard feature. By adding this capability to Microwatt, we significantly mature the platform, turning it from just a CPU core into a more analyzable and professional development target. This tool empowers developers to make data-driven decisions, calculate key metrics like Cycles Per Instruction (CPI), and quantitatively measure the impact of their optimizations.
+CRC calculations are fundamental to ensuring data integrity in countless applications, including networking (Ethernet, Wi-Fi), storage protocols (SATA), and common file formats (ZIP, PNG). Performing these calculations in software consumes valuable CPU cycles, especially in data-heavy applications. A dedicated hardware accelerator provides a much faster and more power-efficient solution, freeing the Microwatt core to perform other tasks and enabling higher data throughput for the entire system. This project demonstrates a classic and practical example of hardware/software co-design for a real-world problem.
 
 ---
 
 ### Core Features
 
-* **Memory-mapped** register interface for easy software access.
-* A **64-bit free-running cycle counter** that increments every clock cycle.
-* A **64-bit instruction-retired counter** that increments only when the CPU successfully completes an instruction.
-* A simple control register to enable, disable, and reset the counters.
+* **Memory-mapped** registers for simple CPU interaction (`DATA_IN`, `STATUS`, `CRC_OUT`).
+* Calculates the standard **CRC-32** checksum (using the IEEE 802.3 polynomial `0x04C11DB7`).
+* Processes data efficiently on a **byte-by-byte** basis.
+* Provides a **"done" flag** in a status register, designed to be polled by the CPU.
+* Control bits to **initialize/reset** the CRC calculation for a new data stream.
 
 ---
 
@@ -25,21 +26,24 @@ For any serious software development, the ability to answer "How fast is my code
 
 
 
-The peripheral connects to the Microwatt system bus for register access. It also requires a single signal tap from the CPU core's pipeline (e.g., an `instruction_retired` pulse) to accurately count completed instructions.
+The accelerator connects to the Microwatt CPU via the system bus. The CPU writes data bytes to the peripheral and polls a status register to know when the calculation is complete. The core logic consists of a parallel CRC calculation unit and a simple state machine to manage the register interface.
 
 ---
 
 ### Implementation Outline
 
-1.  Design the dual-counter peripheral in Verilog. The logic is minimal and primarily consists of two 64-bit registers with enable logic.
-2.  Integrate the module into the OpenFrame user project, connecting its registers to the memory map.
-3.  Identify and connect the appropriate signal from the Microwatt core to the instruction-retired counter's increment logic.
-4.  Develop a testbench to verify that the counters increment correctly under various conditions (e.g., during CPU stalls, the cycle counter should increment while the instruction counter does not).
-5.  Write a sample C program demonstrating how to use the peripheral to benchmark a function and calculate its average CPI.
-6.  Document the register map and provide clear instructions for other developers on how to use the tool for their own projects.
+1.  **Design the Core RTL:** Develop a Verilog module for the parallel CRC32 calculation logic (a 32-bit register with combinational XOR feedback).
+2.  **Create Bus Interface:** Wrap the core logic with a simple memory-mapped slave interface to connect to the Microwatt bus.
+3.  **Develop Testbench:** Create a self-checking Verilog testbench that feeds the module a data stream and compares its final CRC output against a pre-computed value from a reliable source (e.g., a Python script).
+4.  **System Integration:** Integrate the completed peripheral into the OpenFrame user project area.
+5.  **Software & Benchmarking:** Write two C programs:
+    * A pure software version of the CRC32 algorithm.
+    * A driver that uses the hardware accelerator.
+    Then, benchmark both versions on a sample dataset to generate clear performance comparison data.
+6.  **Documentation:** Document the register map, usage, and benchmark results in the project's `README.md`.
 
 ---
 
 ### Expected Outcome
 
-The result will be a lightweight, powerful, and easy-to-use profiling tool for the Microwatt CPU. This project delivers not just a piece of hardware, but a foundational capability that enhances the value and usability of the Microwatt core for the entire open-source community.
+A lightweight, high-performance, and reusable Verilog IP block for CRC32 calculation. The final project will serve as a complete, reproducible example of applying hardware acceleration to the Microwatt platform, featuring a compelling demonstration and clear benchmark data that proves its significant value and efficiency over a software-only approach.
