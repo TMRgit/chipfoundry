@@ -1,49 +1,68 @@
-# Proposal: CRC32 Accelerator Peripheral for Microwatt CPU
+# Project: A High-Throughput CRC32 Accelerator for Microwatt
+
+### Empowering Microwatt for the Open Computing Era with Hardware-Accelerated Data Integrity.
+
+---
 
 ### Project Summary
 
-This project proposes the design and integration of a memory-mapped **CRC32 hardware accelerator** for the Microwatt POWER CPU. Implemented within the ChipFoundry OpenFrame template, this peripheral will offload the computationally intensive task of Cyclic Redundancy Check (CRC) calculation from the main processor. The primary goal is to demonstrate a significant, quantifiable performance increase over a purely software-based implementation for data integrity checks.
+This project proposes the design, integration, and benchmarking of a memory-mapped **CRC32 hardware accelerator** for the Microwatt POWER CPU. Implemented within the ChipFoundry OpenFrame template for the SKY130 process, this peripheral will offload the computationally intensive task of Cyclic Redundancy Check (CRC) calculation. The primary goal is to deliver a robust, reusable, and open-source IP block that provides a significant, quantifiable performance increase over a purely software-based implementation, thereby making the Microwatt platform more powerful for data-centric applications.
 
 ---
 
 ### Motivation
 
-CRC calculations are fundamental to ensuring data integrity in countless applications, including networking (Ethernet, Wi-Fi), storage protocols (SATA), and common file formats (ZIP, PNG). Performing these calculations in software consumes valuable CPU cycles, especially in data-heavy applications. A dedicated hardware accelerator provides a much faster and more power-efficient solution, freeing the Microwatt core to perform other tasks and enabling higher data throughput for the entire system. This project demonstrates a classic and practical example of hardware/software co-design for a real-world problem.
+In the open computing era, robust and efficient data handling is paramount. CRC calculations are fundamental to ensuring data integrity in countless applications, from networking (Ethernet, Wi-Fi) to storage (SATA) and file formats (ZIP, PNG). Performing these checks in software consumes valuable CPU cycles that could be used for primary application tasks.
+
+By creating a dedicated hardware accelerator, we free the Microwatt core to perform other work, enabling higher data throughput and greater overall system efficiency. This project serves as a practical, high-impact example of hardware/software co-design that directly contributes to Microwatt's capabilities and its readiness for real-world, data-intensive workloads.
 
 ---
 
 ### Core Features
 
-* **Memory-mapped** registers for simple CPU interaction (`DATA_IN`, `STATUS`, `CRC_OUT`).
-* Calculates the standard **CRC-32** checksum (using the IEEE 802.3 polynomial `0x04C11DB7`).
-* Processes data efficiently on a **byte-by-byte** basis.
-* Provides a **"done" flag** in a status register, designed to be polled by the CPU.
-* Control bits to **initialize/reset** the CRC calculation for a new data stream.
+*   **Memory-Mapped Interface:** Simple CPU interaction via `DATA_IN`, `STATUS`, and `CRC_OUT` registers.
+*   **Standard Algorithm:** Calculates the standard **CRC-32** checksum (IEEE 802.3 polynomial: `0x04C11DB7`).
+*   **Efficient Processing:** Ingests data on a byte-by-byte basis, suitable for streaming applications.
+*   **Simple CPU Polling:** A "done" flag in the `STATUS` register signals completion of the calculation.
+*   **Reset Capability:** Control bits to initialize/reset the CRC logic for a new data stream.
 
 ---
 
-### High-Level Block Diagram
+### Alignment with Judging Criteria
 
+This project is designed from the ground up to meet the requirements of the Microwatt Design Challenge.
 
-
-The accelerator connects to the Microwatt CPU via the system bus. The CPU writes data bytes to the peripheral and polls a status register to know when the calculation is complete. The core logic consists of a parallel CRC calculation unit and a simple state machine to manage the register interface.
+*   **Design Technical Merit:** The project improves the Microwatt ecosystem by providing a crucial, reusable IP block for a common computational bottleneck. It demonstrates how Microwatt's bus can be extended with custom hardware to accelerate real-world tasks, enhancing its value for networking and storage applications.
+*   **Project Documentation & Reproducibility:** The final deliverable will include a comprehensive `README.md` with a register map, usage instructions, and step-by-step guides for synthesis and simulation. This focus on clear documentation ensures that the project can be easily replicated and understood by the community.
+*   **Verification Coverage:** The project includes a self-checking Verilog testbench. This testbench will feed the module a known data stream and automatically verify its final CRC output against a pre-computed value, ensuring correctness and robustness.
+*   **Code Quality:** The Verilog RTL will be written in a clean, modular, and well-commented style, adhering to industry best practices to facilitate understanding and future reuse.
 
 ---
 
 ### Implementation Outline
 
-1.  **Design the Core RTL:** Develop a Verilog module for the parallel CRC32 calculation logic (a 32-bit register with combinational XOR feedback).
-2.  **Create Bus Interface:** Wrap the core logic with a simple memory-mapped slave interface to connect to the Microwatt bus.
-3.  **Develop Testbench:** Create a self-checking Verilog testbench that feeds the module a data stream and compares its final CRC output against a pre-computed value from a reliable source (e.g., a Python script).
-4.  **System Integration:** Integrate the completed peripheral into the OpenFrame user project area.
-5.  **Software & Benchmarking:** Write two C programs:
-    * A pure software version of the CRC32 algorithm.
-    * A driver that uses the hardware accelerator.
-    Then, benchmark both versions on a sample dataset to generate clear performance comparison data.
-6.  **Documentation:** Document the register map, usage, and benchmark results in the project's `README.md`.
+1.  **Core RTL Design:** Develop a synthesizable Verilog module for the parallel CRC32 calculation logic.
+2.  **Bus Interface & Integration:** Wrap the core logic with a memory-mapped slave interface and integrate it into the OpenFrame `user_project_wrapper`.
+3.  **Thorough Verification:** Create a self-checking Verilog testbench that compares the hardware's output against a golden reference value generated by a Python script to guarantee correctness.
+4.  **Open-Source Flow Synthesis:** Synthesize the design for the **SKY130** process using the recommended **OpenLane** flow. All necessary scripts and configuration files will be provided to ensure full reproducibility.
+5.  **Software & Benchmarking:** Develop two C programs:
+    *   A pure software implementation of the CRC32 algorithm.
+    *   A driver that utilizes the hardware accelerator.
+    Both versions will be benchmarked on a sample dataset to generate clear, compelling performance comparison data (e.g., CPU cycles, execution time).
+6.  **Final Documentation:** The final `README.md` will be updated with a register map, usage guide, performance graphs, and a link to a short video demonstrating the project's functionality and results.
 
 ---
 
 ### Expected Outcome
 
-A lightweight, high-performance, and reusable Verilog IP block for CRC32 calculation. The final project will serve as a complete, reproducible example of applying hardware acceleration to the Microwatt platform, featuring a compelling demonstration and clear benchmark data that proves its significant value and efficiency over a software-only approach.
+A lightweight, high-performance, and reusable Verilog IP block for CRC32 calculation, fully integrated and demonstrated on the Microwatt platform. The project will serve as a complete, reproducible example of applying hardware acceleration within the ChipFoundry ecosystem, backed by clear benchmark data that proves its value and efficiency over a software-only approach.
+
+---
+
+### License
+
+This project will be released under the **Apache 2.0 License**, an approved open-source license that permits broad use and modification.
+
+### AI Usage Statement
+
+  If any AI tools are used for Verilog RTL, testbenches, and software, documentation or research for this project the associated session logs will be included in the repository as required.
